@@ -1,2 +1,90 @@
 # 301b-city-explorer
 City Explorer project (Labs 6 - 9).
+
+**Author(s)**: Thomas Sherer
+
+**Version**: 1.0.0 (increment the patch/fix version number if you make more commits past your first submission)
+
+## Overview
+Given that a user enters a city in the Browser (Front End), the server (Back End) responds with a map and selected data for that city.
+
+## Getting Started
+Create a new repo on GitHUb with README.md and License, clone that down to your local machine (in a linux terminal).
+Create the file structure, build a simple server (server.js file).
+
+<!-- What are the steps that a user must take in order to build this app on their own machine and get it running? -->
+
+## Architecture
+Use Node and npm; run npm init, then npm install -S cors dotenv express.
+<!-- Provide a detailed description of the application design. What technologies (languages, libraries, etc) you're using, and any other relevant design information. -->
+
+## Change Log
+<!-- Use this area to document the iterative changes made to your application as each feature is successfully implemented. Use time stamps. Here's an examples:
+
+01-01-2001 4:59pm - Application now has a fully-functional express server, with a GET route for the location resource.
+-->
+# Feature Build History
+## Feature #: Initial build-out
+### Estimate of time needed to complete
+2 hrs.
+### Start date and time
+2020-03-17 0830 am - Created repo, built out and populated file structure, Did code review with Yasir.
+
+### Finish time
+NN am
+### Actual time needed to complete
+NN min
+
+## Feature #: FEATURE DESCRIPTION
+### Estimate of time needed to complete
+NN
+### Start date and time
+NN am
+### Finish time
+NN am
+### Actual time needed to complete
+NN min
+
+
+## Credits and Collaborations
+<!-- Give credit (and a link) to other people or resources that helped you build this application. -->
+Lab 6 - Yasir Mohamud;
+Lab 7 - NAME
+Lab 8 - NAME
+Lab 9 - NAME
+
+
+
+
+### Links and Resources
+* [submission PR](http://xyz.com)
+* Any Links you used as reference
+CSS reset file:
+	https://meyerweb.com/eric/tools/css/reset/
+
+### Setup
+.gitignore:     https://www.gitignore.io/api/node,macos,linux,windows,webstorm,visualstudiocode
+Node and npm  (I used node v10.19.0 and npm 6.13.4)
+DEPENDENCIES
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1"
+    nodemon
+
+#### `.env` requirements
+* `PORT` - 3000
+* `DATABASE_URL` - URL to the running mongo instance/db
+* any environment variables like api keys as needed
+
+#### Running the app
+* `npm start`
+* Endpoint: `/foo/bar/`
+  * Returns a JSON object with abc in it.
+* Endpoint: `/bing/zing/`
+  * Returns a JSON object with xyz in it.
+
+### Reflections and Comments
+* Consider including the answers to your daily journal and submission questions here
+* This is also a good place to reflect on the tools and resources used and learned
+
+### Time Records
+
