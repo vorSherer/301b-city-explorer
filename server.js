@@ -3,107 +3,71 @@
 //libraries
 require('dotenv').config();
 
-// my server
-const express = require('express');
-const app = express();
+// application dependencies
 const cors = require('cors');
-// const superagent = require('superagent');
+const express = require('express');
+const superagent = require('superagent');
 
+// application setup
 const PORT = process.env.PORT || 3001;
-
+const app = express();
 app.use(cors());
-app.use(errorHandler);
-// app.use(express.static('./public'));
 
-
-// superagent.get('url')
-//     .then(results => { do something, e.g. console.log('PoL') })
-//     .catch(err => console.error(err))
-
-// $.ajax('url', {method: "GET", datatype: "JSON"})
-//  .then (results => // do something)
 
 app.get('/location', (request, response) => {
-  // this is the city that the front end is sending us in the qurey
-  // the query lives in the url after the ? htt://cooldomain.com?city=seattle
-  try{
+  // try{
     let city = request.query.city;
-    console.log('😎', city);
-    let geo = require('./data/geo.json');
-    let location = new Location(geo[0], city)
-    response.send(location);
-  }
-  catch(err){
-    response.status(500).send(err);
-    console.error(err);
-  }
+    let url = `https://us1.locationiq.com/v1/search.php?key=${process.env.GEOCODE_API_KEY}&q=${city}&format=json`;
+    superagent.get(url).then(results => {
+      let location = new Location(results.body[0], city)
+      response.send(location);
+    }).catch(err => errorHandler(err, response));
 })
 
-// NEW Live Location Route - under construction:
-// app.get('/location', (request, response) => {
-//   // this is the city that the front end is sending us in the qurey
-//   // the query lives in the url after the ? htt://cooldomain.com?city=seattle
-//   try{
-//     let city = request.query.city;
-//     // let url = `https://us1.locationiq.com/v1/search.php?key=${process.env.GEOCODE_API_KEY}&q=${city}&format=json`;
-//     // superagent.get(url)
-
-//     // let geo = require('./data/geo.json');
-//     // let location = new Location(geo[0], city)
-//     // response.send(location);
-//   }
-//   catch(err){
-//     response.status(500).send(err);
-//     console.error(err);
-//   }
-// })
 
 
+// **************
+
+app.get('/weather', (request, response) => {
+// figure out what the front end sent
+  // console.log('From the front end: ', request.query);
+//     // let city = request.query.search_query;
+//     // let formatted_query = request.query.formatted_query;
+//     // let latitude = request.query.latitude;
+//     // let longitude = request.query.longitude;
+  let locationObject = request.query;
+  let url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${locationObject.latitude},${locationObject.longitude}`;
+
+  superagent.get(url).then(results => {
+    let weatherArray = results.body.daily.data;
+    let forecastArray = weatherArray.map(day => new Weather (day));
+    response.status(200).send(forecastArray);
+  })    
+}    
+
+// Constructor functions
+    
 function Location(obj, city){
   this.search_query = city;
   this.formatted_query = obj.display_name;
   this.latitude = obj.lat;
   this.longitude = obj.lon;
 }
+    
 
-// **************
-app.get('/weather', (request, response) => {
-    // figure out what the front end sent
-//     console.log('From the front end: ', request.query);
-//     // let city = request.query.search_query;
-//     // let formatted_query = request.query.formatted_query;
-//     // let latitude = request.query.latitude;
-//     // let longitude = request.query.longitude;
-
-    // get data from the darksky file
-  // try{
-  let weather = require('./data/darksky.json');
-  let weatherArray = weather.daily.data;
-  const forecastArray = weatherArray.map(day => {
-    return new Weather(day);  //weather.daily.data[0])       })
-  });
-  response.send(forecastArray);
-})
-//     // catch(err){
-//     //     console.error(err);
-//     }
-// })
-// // the query lives in the url after the ? htt://cooldomain.com?city=seattle
-  
-  function Weather(obj){
-    this.time = new Date(obj.time * 1000).toDateString();
-    this.forecast = obj.summary;
-  }
+function Weather(obj){
+  this.time = new Date(obj.time * 1000).toDateString();
+  this.forecast = obj.summary;
+}
   
 // ***************
 
-function errorHandler (err, req, res, next) {
-  if (res.headersSent) {
-    return next(err)
+function errorHandler (err, response) {
+  console.error(err);
+  if(response) {
+    response.status(500).send('Sorry, I can\'t help with that.');
   }
-  res.status(500).send({ status: 500, responseText: 'Sorry, something went wrong'})
 }
-
 
 app.get('*', (request, response) => {
   response.status(404).send('Sorry, that route does not exist.');
