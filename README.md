@@ -35,6 +35,26 @@ NN am
 ### Actual time needed to complete
 NN min
 
+## Feature #: Lab 6 
+### Estimate of time needed to complete
+NN
+### Start date and time
+NN am
+### Finish time
+NN am
+### Actual time needed to complete
+NN min
+
+## Feature #: Lab 7
+### Estimate of time needed to complete
+5 hrs.
+### Start date and time
+2020-03-18, 0930 am
+### Finish time
+2020-03-18, 1330 pm
+### Actual time needed to complete
+4 hrs.
+
 ## Feature #: FEATURE DESCRIPTION
 ### Estimate of time needed to complete
 NN
@@ -49,7 +69,7 @@ NN min
 ## Credits and Collaborations
 <!-- Give credit (and a link) to other people or resources that helped you build this application. -->
 Lab 6 - Yasir Mohamud;
-Lab 7 - NAME
+Lab 7 - Corey DeJong;
 Lab 8 - NAME
 Lab 9 - NAME
 
