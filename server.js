@@ -1,9 +1,9 @@
 'use strict';
 
-//libraries
+// link to .env for environmental variables
 require('dotenv').config();
 
-// application dependencies
+// declare application dependencies
 const cors = require('cors');
 const express = require('express');
 const superagent = require('superagent');
@@ -14,39 +14,40 @@ const app = express();
 app.use(cors());
 
 
+// endpoint calls
 app.get('/location', (request, response) => {
   // try{
-    let city = request.query.city;
-    let url = `https://us1.locationiq.com/v1/search.php?key=${process.env.GEOCODE_API_KEY}&q=${city}&format=json`;
-    superagent.get(url).then(results => {
-      let location = new Location(results.body[0], city)
-      response.send(location);
-    }).catch(err => errorHandler(err, response));
+    const city = request.query.city;
+    const url = `https://us1.locationiq.com/v1/search.php?key=${process.env.GEOCODE_API_KEY}&q=${city}&format=json`;
+    superagent.get(url)
+      .then(results => {
+        const location = new Location(results.body[0], city)
+        response.status(200).send(location);
+      }).catch(err => errorHandler(err, response));
 })
-
 
 
 // **************
 
-// app.get('/weather', (request, response) => {
+app.get('/weather', (request, response) => {
+
 // // figure out what the front end sent
 //   // console.log('From the front end: ', request.query);
 // //     // let city = request.query.search_query;
 // //     // let formatted_query = request.query.formatted_query;
-// //     // let latitude = request.query.latitude;
-// //     // let longitude = request.query.longitude;
-//   let locationObject = request.query;
-//   let url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${locationObject.latitude},${locationObject.longitude}`;
+  let latitude = request.query.latitude;
+  let longitude = request.query.longitude;
+  let url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${latitude},${longitude}`;
 
-//   superagent.get(url).then(results => {
-//     let weatherArray = results.body.daily.data;
-//     let forecastArray = weatherArray.map(day => new Weather (day));
-//     response.status(200).send(forecastArray);
-//   })    
-// }    
+  superagent.get(url)
+  .then(results => {
+    let weatherArray = results.body.daily.data;
+    let forecastArray = weatherArray.map(day => new Weather(day));
+    response.status(200).send(forecastArray);
+  });
+}); 
 
 // Constructor functions
-    
 function Location(obj, city){
   this.search_query = city;
   this.formatted_query = obj.display_name;
