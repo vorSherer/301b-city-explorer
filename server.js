@@ -28,22 +28,22 @@ app.get('/location', (request, response) => {
 
 // **************
 
-app.get('/weather', (request, response) => {
-// figure out what the front end sent
-  // console.log('From the front end: ', request.query);
-//     // let city = request.query.search_query;
-//     // let formatted_query = request.query.formatted_query;
-//     // let latitude = request.query.latitude;
-//     // let longitude = request.query.longitude;
-  let locationObject = request.query;
-  let url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${locationObject.latitude},${locationObject.longitude}`;
+// app.get('/weather', (request, response) => {
+// // figure out what the front end sent
+//   // console.log('From the front end: ', request.query);
+// //     // let city = request.query.search_query;
+// //     // let formatted_query = request.query.formatted_query;
+// //     // let latitude = request.query.latitude;
+// //     // let longitude = request.query.longitude;
+//   let locationObject = request.query;
+//   let url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${locationObject.latitude},${locationObject.longitude}`;
 
-  superagent.get(url).then(results => {
-    let weatherArray = results.body.daily.data;
-    let forecastArray = weatherArray.map(day => new Weather (day));
-    response.status(200).send(forecastArray);
-  })    
-}    
+//   superagent.get(url).then(results => {
+//     let weatherArray = results.body.daily.data;
+//     let forecastArray = weatherArray.map(day => new Weather (day));
+//     response.status(200).send(forecastArray);
+//   })    
+// }    
 
 // Constructor functions
     
