@@ -8,4 +8,6 @@ CREATE TABLE locations (
     longitude float
 );
 
--- INSERT INTO locations
+-- INSERT INTO locations (search_query,formatted_query, latitude,longitude) VALUES ('seattle','seattle',)
+
+-- SELECT * FROM locations
