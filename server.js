@@ -42,28 +42,20 @@ app.get('/location', (request, response) => {
     client.query(sql, safeValues)
     .then(sqlCheck => {
       if(sqlCheck.rows.length > 0) {
-        console.log('dB says I\'ve got that already');
         response.status(200).send(sqlCheck.rows[0]);
       } else {
         const url = `https://us1.locationiq.com/v1/search.php?key=${process.env.GEOCODE_API_KEY}&q=${city}&format=json`;
         superagent.get(url)
         .then(results => {
-          // console.log(results);
           const location = new Location(results.body[0], city)
           sql = 'INSERT INTO locations (search_query,formatted_query,latitude,longitude) VALUES ($1, $2, $3, $4);';
           safeValues = [location.search_query, location.search_query, location.latitude, location.longitude];
-          console.log('Now inserting these values into DB');
-          console.log(sql,safeValues);
           client.query(sql,safeValues);
           response.status(200).send(location);
         }).catch(err => errorHandler(err, response));
       }
     })
 });
-
-
-
-
 
 
 app.get('/weather', (request, response) => {
@@ -92,31 +84,17 @@ app.get('/weather', (request, response) => {
 // });
 
 
-app.get('/movies', (request, response) => {
+// **************************************************************************
+// app.get('/movies', (request, response) => {
+//   //Build route content here
+// })
 
-})
+
+
+
+
 
 // **************************************************************************
-
-
-// Original code *****************************************************
-// app.get('/weather', (request, response) => {
-//   // //     // let city = request.query.search_query;
-//   // //     // let formatted_query = request.query.formatted_query;
-//   let latitude = request.query.latitude;
-//   let longitude = request.query.longitude;
-//   let url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${latitude},${longitude}`;
-//   superagent.get(url)
-//   .then(results => {
-//     let weatherArray = results.body.daily.data;
-//     let forecastArray = weatherArray.map(day => new Weather(day));
-//     response.status(200).send(forecastArray);
-// }).catch(err => errorHandler(err, response));
-// }); 
-
-
-
-// **************
 
 
 // Constructor functions
@@ -169,33 +147,3 @@ app.get('*', (request, response) => {
   response.status(404).send('Sorry, that route does not exist.');
 })
 
-
-
-// app.get('/', (req,res) => {
-//     res.status(200).send('Hello!')
-// });
-
-// app.get('/location', (req, res) => {
-//     try{
-//         let city = req.query.city;
-//         let geo = require('./data/geo.json');
-//         let location = new Location(geo[0], city);
-
-//         res.send(location);
-//     }
-//     catch(err) {
-//         console.error(err);
-//     }
-// })
-
-// function Location(obj, city) {
-//     this.search_query = city;
-// 	this.formatted_query = obj.display_name;
-// 	this.latitude = obj.lat;
-// 	this.longitude = obj.lon;
-// }
-
-
-// app.use('*', (req, res) => res.send('Sorry, that route dos not exist.'));
-
-// app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
