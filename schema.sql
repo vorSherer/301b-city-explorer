@@ -8,3 +8,4 @@ CREATE TABLE locations (
     longitude float
 );
 
+-- INSERT INTO locations
