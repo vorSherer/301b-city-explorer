@@ -15,7 +15,8 @@ const app = express();
 app.use(cors());
 const client = new pg.Client(process.env.DATABASE_URL);
 
-client.on('error', err => errorHandler(err, response));
+// client.on('error', err => errorHandler(err, response));
+client.on('error', err => errorHandler(err));
 
 
 // turn on the server once the database is connected
@@ -72,29 +73,41 @@ app.get('/weather', (request, response) => {
   }).catch(err => errorHandler(err, response));
 });
 
-// app.get('/trails', (request, response) => {
-//   let latitude = request.query;
-//   let longitude = request.query;
-//   let url = `https://www.hikingproject.com/data/get-trails?lat=${latitude}&lon=${longitude}&maxDistance=10&key=${process.env.HIKING_API_KEY}`;
-//   superagent.get(url)
-//   .then(results => {
-//     let hikesObj = results.body.trails.map(trail => new Hiking(trail));
-//     response.status(200).send(hikesObj);
-//   }).catch(err => errorHandler(err, response));
-// });
+app.get('/trails', (request, response) => {
+  let {latitude, longitude} = request.query;
+  let url = `https://www.hikingproject.com/data/get-trails?lat=${latitude}&lon=${longitude}&maxDistance=10&key=${process.env.TRAILS_API_KEY}`;
+  superagent.get(url)
+  .then(results => {
+    let dataObj = results.body.trails.map(trail => new Hiking(trail));
+    response.status(200).send(dataObj);
+  }).catch(err => errorHandler(err, response));
+});
 
 
-// **************************************************************************
-// app.get('/movies', (request, response) => {
-//   //Build route content here
-// })
+app.get('/movies', (request, response) => {
+  let location = request.query.search_query;
+  let url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIES_API_KEY}&language=en-US&query=${location}&page=1&include_adult=false`;
+  superagent.get(url)
+  .then(results => {
+    let movieData = results.body.results;
+    let movieResults = movieData.map((dataObj) => (new Movies(dataObj)));
+    response.status(200).send(movieResults);
+  }).catch(err => errorHandler(err, response));
+});
 
+app.get('/yelp',(request, response) => {
+  let city = request.query.search_query;
+  let url = `https://api.yelp.com/v3/businesses/search?location=${city}`;
+  superagent.get(url)
+    .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`)
+    .then(results => {
+      let newYelp = results.body.businesses.map(biz => {
+        return new Yelp(biz);
+      });
+      response.status(200).send(newYelp);
+    }).catch(err => errorHandler(err, response));
+});
 
-
-
-
-
-// **************************************************************************
 
 
 // Constructor functions
@@ -110,29 +123,37 @@ function Weather(obj) {
   this.forecast = obj.summary;
 }
 
-// function Hiking(obj) {
-//   this.name = obj.name;
-//   this.location = obj.location;
-//   this.length  = obj.length;
-//   this.stars = obj.stars;
-//   this.star_votes = obj.starVotes;
-//   this.summary = obj.summary;
-//   this.trail_url = obj.url;
-//   this.conditions = obj.conditionStatus;
-//   this.condition_date = obj.conditionDate.slice(0,10);
-//   this.condition_time = obj.conditionTime.slice(11,19);
-// }
+function Hiking(obj) {
+  this.name = obj.name;
+  this.location = obj.location;
+  this.length  = obj.length;
+  this.stars = obj.stars;
+  this.star_votes = obj.starVotes;
+  this.summary = obj.summary;
+  this.trail_url = obj.url;
+  this.conditions = obj.conditionStatus;
+  this.condition_date = obj.conditionDate.slice(0,10);
+  this.condition_time = obj.conditionTime.slice(11,19);
+}
 
-// function Movies (obj) {
-//   this.title = obj.title;
-//   this.overview = obj.overview;
-//   this.average_votes = obj.avgVotes;
-//   this.total_votes = obj.ttlVotes;
-//   this.image_url = obj.imageUrl;
-//   this.popularity = obj.popularity;
-//   this.released_on = obj.released;
-//   }
+
+function Movies (obj) {
+  this.title = obj.title;
+  this.overview = obj.overview;
+  this.average_votes = obj.vote_average;
+  this.total_votes = obj.vote_count;
+  this.image_url = obj.imageUrl || 'not available';
+  this.popularity = obj.popularity;
+  this.released_on = obj.release_date;
+  }
   
+  function Yelp(obj){
+    this.name = obj.name;
+    this.image_url = obj.image_url;
+    this.price = obj.price;
+    this.rating = obj.rating;
+    this.url = obj.url;
+  }
 
 // ***************
 
