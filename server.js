@@ -18,7 +18,6 @@ const client = new pg.Client(process.env.DATABASE_URL);
 // client.on('error', err => errorHandler(err, response));
 client.on('error', err => errorHandler(err));
 
-
 // turn on the server once the database is connected
 client.connect()
 .then(() => {
@@ -58,10 +57,15 @@ app.get('/location', (request, response) => {
     })
 });
 
+function Location(obj, city) {
+  this.search_query = city;
+  this.formatted_query = obj.display_name;
+  this.latitude = obj.lat;
+  this.longitude = obj.lon;
+}
+
 
 app.get('/weather', (request, response) => {
-  // //     // let city = request.query.search_query;
-  // //     // let formatted_query = request.query.formatted_query;
   let latitude = request.query.latitude;
   let longitude = request.query.longitude;
   let url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${latitude},${longitude}`;
@@ -73,15 +77,36 @@ app.get('/weather', (request, response) => {
   }).catch(err => errorHandler(err, response));
 });
 
+function Weather(obj) {
+  this.time = new Date(obj.time * 1000).toDateString();
+  this.forecast = obj.summary;
+}
+
+
 app.get('/trails', (request, response) => {
+  console.log(request.query);
   let {latitude, longitude} = request.query;
   let url = `https://www.hikingproject.com/data/get-trails?lat=${latitude}&lon=${longitude}&maxDistance=10&key=${process.env.TRAILS_API_KEY}`;
   superagent.get(url)
   .then(results => {
+    console.log(results.body.trails);
     let dataObj = results.body.trails.map(trail => new Hiking(trail));
     response.status(200).send(dataObj);
   }).catch(err => errorHandler(err, response));
 });
+
+function Hiking(obj) {
+  this.name = obj.name;
+  this.location = obj.location;
+  this.length  = obj.length;
+  this.stars = obj.stars;
+  this.star_votes = obj.starVotes;
+  this.summary = obj.summary;
+  this.trail_url = obj.url;
+  this.conditions = obj.conditionStatus;
+  this.condition_date = obj.conditionDate.slice(0,10);
+  this.condition_time = obj.conditionDate.slice(11,19);
+}
 
 
 app.get('/movies', (request, response) => {
@@ -91,9 +116,21 @@ app.get('/movies', (request, response) => {
   .then(results => {
     let movieData = results.body.results;
     let movieResults = movieData.map((dataObj) => (new Movies(dataObj)));
+    // only send 20 movies
     response.status(200).send(movieResults);
   }).catch(err => errorHandler(err, response));
 });
+
+function Movies (obj) {
+  this.title = obj.title;
+  this.overview = obj.overview;
+  this.average_votes = obj.vote_average;
+  this.total_votes = obj.vote_count;
+  this.image_url = obj.imageUrl// || 'not available';
+  this.popularity = obj.popularity;
+  this.released_on = obj.release_date;
+  }
+  
 
 app.get('/yelp',(request, response) => {
   let city = request.query.search_query;
@@ -108,45 +145,6 @@ app.get('/yelp',(request, response) => {
     }).catch(err => errorHandler(err, response));
 });
 
-
-
-// Constructor functions
-function Location(obj, city) {
-  this.search_query = city;
-  this.formatted_query = obj.display_name;
-  this.latitude = obj.lat;
-  this.longitude = obj.lon;
-}
-
-function Weather(obj) {
-  this.time = new Date(obj.time * 1000).toDateString();
-  this.forecast = obj.summary;
-}
-
-function Hiking(obj) {
-  this.name = obj.name;
-  this.location = obj.location;
-  this.length  = obj.length;
-  this.stars = obj.stars;
-  this.star_votes = obj.starVotes;
-  this.summary = obj.summary;
-  this.trail_url = obj.url;
-  this.conditions = obj.conditionStatus;
-  this.condition_date = obj.conditionDate.slice(0,10);
-  this.condition_time = obj.conditionTime.slice(11,19);
-}
-
-
-function Movies (obj) {
-  this.title = obj.title;
-  this.overview = obj.overview;
-  this.average_votes = obj.vote_average;
-  this.total_votes = obj.vote_count;
-  this.image_url = obj.imageUrl || 'not available';
-  this.popularity = obj.popularity;
-  this.released_on = obj.release_date;
-  }
-  
   function Yelp(obj){
     this.name = obj.name;
     this.image_url = obj.image_url;
@@ -155,7 +153,6 @@ function Movies (obj) {
     this.url = obj.url;
   }
 
-// ***************
 
 function errorHandler (err, response) {
   console.error(err);
