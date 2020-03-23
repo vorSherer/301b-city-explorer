@@ -8,6 +8,6 @@ CREATE TABLE locations (
     longitude numeric(20,14)
 );
 
-INSERT INTO locations (search_query, formatted_query, latitude, longitude) VALUES ('tacoma', 'tacoma', '47.2495798', '-122.4398746');
+INSERT INTO locations (search_query, formatted_query, latitude, longitude) VALUES ('tacoma', 'Tacoma, Pierce County, Washington, USA', '47.2495798', '-122.4398746');
 
 -- SELECT * FROM locations
