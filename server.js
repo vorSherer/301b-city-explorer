@@ -15,7 +15,6 @@ const app = express();
 app.use(cors());
 const client = new pg.Client(process.env.DATABASE_URL);
 
-// client.on('error', err => errorHandler(err, response));
 client.on('error', err => errorHandler(err));
 
 // turn on the server once the database is connected
@@ -28,34 +27,69 @@ client.connect()
 });
 
 
-
 // my libraries
-// const handleLocation = require('./lib/handleLocation');
+// const locationHandler = require('./lib/location.js');
+const weatherHandler = require('./lib/weather.js');
+const hikingHandler = require('./lib/trails.js');
+const movieHandler = require('./lib/movies.js');
+const yelpHandler = require('./lib/yelp.js');
+
 
 
 
 // endpoint calls
-app.get('/location', (request, response) => {
-    const city = request.query.city;
-    let sql = 'SELECT * FROM locations WHERE search_query = $1;';
-    let safeValues = [city];
-    client.query(sql, safeValues)
-    .then(sqlCheck => {
-      if(sqlCheck.rows.length > 0) {
-        response.status(200).send(sqlCheck.rows[0]);
-      } else {
-        const url = `https://us1.locationiq.com/v1/search.php?key=${process.env.GEOCODE_API_KEY}&q=${city}&format=json`;
-        superagent.get(url)
-        .then(results => {
-          const location = new Location(results.body[0], city)
-          sql = 'INSERT INTO locations (search_query,formatted_query,latitude,longitude) VALUES ($1, $2, $3, $4);';
-          safeValues = [location.search_query, location.search_query, location.latitude, location.longitude];
-          client.query(sql,safeValues);
-          response.status(200).send(location);
-        }).catch(err => errorHandler(err, response));
-      }
-    })
-});
+app.get('/location', locationHandler);
+app.get('/weather', weatherHandler);
+app.get('/trails', hikingHandler);
+app.get('/movies', movieHandler);
+app.get('/yelp', yelpHandler);
+
+
+
+function locationHandler(request, response) {
+  const city = request.query.city;
+  console.log(city);
+  let sql = 'SELECT * FROM locations WHERE search_query = $1;';
+  let safeValues = [city];
+  client.query(sql, safeValues)
+  .then(sqlCheck => {
+    if(sqlCheck.rows.length > 0) {
+      response.status(200).send(sqlCheck.rows[0]);
+    } else {
+      const url = `https://us1.locationiq.com/v1/search.php?key=${process.env.GEOCODE_API_KEY}&q=${city}&format=json`;
+      superagent.get(url)
+      .then(results => {
+        const location = new Location(results.body[0], city)
+        sql = 'INSERT INTO locations (search_query,formatted_query,latitude,longitude) VALUES ($1, $2, $3, $4);';
+        safeValues = [location.search_query, location.search_query, location.latitude, location.longitude];
+        client.query(sql,safeValues);
+        response.status(200).send(location);
+      }).catch(err => errorHandler(err, response));
+    }
+  })
+};
+
+// app.get('/location', (request, response) => {
+//     const city = request.query.city;
+//     let sql = 'SELECT * FROM locations WHERE search_query = $1;';
+//     let safeValues = [city];
+//     client.query(sql, safeValues)
+//     .then(sqlCheck => {
+//       if(sqlCheck.rows.length > 0) {
+//         response.status(200).send(sqlCheck.rows[0]);
+//       } else {
+//         const url = `https://us1.locationiq.com/v1/search.php?key=${process.env.GEOCODE_API_KEY}&q=${city}&format=json`;
+//         superagent.get(url)
+//         .then(results => {
+//           const location = new Location(results.body[0], city)
+//           sql = 'INSERT INTO locations (search_query,formatted_query,latitude,longitude) VALUES ($1, $2, $3, $4);';
+//           safeValues = [location.search_query, location.search_query, location.latitude, location.longitude];
+//           client.query(sql,safeValues);
+//           response.status(200).send(location);
+//         }).catch(err => errorHandler(err, response));
+//       }
+//     })
+// });
 
 function Location(obj, city) {
   this.search_query = city;
@@ -63,95 +97,6 @@ function Location(obj, city) {
   this.latitude = obj.lat;
   this.longitude = obj.lon;
 }
-
-
-app.get('/weather', (request, response) => {
-  let latitude = request.query.latitude;
-  let longitude = request.query.longitude;
-  let url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${latitude},${longitude}`;
-  superagent.get(url)
-  .then(results => {
-    let weatherArray = results.body.daily.data;
-    let forecastArray = weatherArray.map(day => new Weather(day));
-    response.status(200).send(forecastArray);
-  }).catch(err => errorHandler(err, response));
-});
-
-function Weather(obj) {
-  this.time = new Date(obj.time * 1000).toDateString();
-  this.forecast = obj.summary;
-}
-
-
-app.get('/trails', (request, response) => {
-  console.log(request.query);
-  let {latitude, longitude} = request.query;
-  let url = `https://www.hikingproject.com/data/get-trails?lat=${latitude}&lon=${longitude}&maxDistance=10&key=${process.env.TRAILS_API_KEY}`;
-  superagent.get(url)
-  .then(results => {
-    console.log(results.body.trails);
-    let dataObj = results.body.trails.map(trail => new Hiking(trail));
-    response.status(200).send(dataObj);
-  }).catch(err => errorHandler(err, response));
-});
-
-function Hiking(obj) {
-  this.name = obj.name;
-  this.location = obj.location;
-  this.length  = obj.length;
-  this.stars = obj.stars;
-  this.star_votes = obj.starVotes;
-  this.summary = obj.summary;
-  this.trail_url = obj.url;
-  this.conditions = obj.conditionStatus;
-  this.condition_date = obj.conditionDate.slice(0,10);
-  this.condition_time = obj.conditionDate.slice(11,19);
-}
-
-
-app.get('/movies', (request, response) => {
-  let location = request.query.search_query;
-  let url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIES_API_KEY}&language=en-US&query=${location}&page=1&include_adult=false`;
-  superagent.get(url)
-  .then(results => {
-    let movieData = results.body.results;
-    let movieResults = movieData.map((dataObj) => (new Movies(dataObj)));
-    // only send 20 movies
-    response.status(200).send(movieResults);
-  }).catch(err => errorHandler(err, response));
-});
-
-function Movies (obj) {
-  this.title = obj.title;
-  this.overview = obj.overview;
-  this.average_votes = obj.vote_average;
-  this.total_votes = obj.vote_count;
-  this.image_url = obj.imageUrl// || 'not available';
-  this.popularity = obj.popularity;
-  this.released_on = obj.release_date;
-  }
-  
-
-app.get('/yelp',(request, response) => {
-  let city = request.query.search_query;
-  let url = `https://api.yelp.com/v3/businesses/search?location=${city}`;
-  superagent.get(url)
-    .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`)
-    .then(results => {
-      let newYelp = results.body.businesses.map(biz => {
-        return new Yelp(biz);
-      });
-      response.status(200).send(newYelp);
-    }).catch(err => errorHandler(err, response));
-});
-
-  function Yelp(obj){
-    this.name = obj.name;
-    this.image_url = obj.image_url;
-    this.price = obj.price;
-    this.rating = obj.rating;
-    this.url = obj.url;
-  }
 
 
 function errorHandler (err, response) {

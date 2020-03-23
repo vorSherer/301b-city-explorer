@@ -97,6 +97,17 @@ NN min
 2 hrs. 30 min.
 
 
+## Feature #: Lab 9 Feature 3
+### Estimate of time needed to complete
+3 hrs.
+### Start date and time
+2020-03-22, 1630 pm
+### Finish time
+2020-03-22, nn pm
+### Actual time needed to complete
+NN hrs. NN min.
+
+
 ## Credits and Collaborations
 <!-- Give credit (and a link) to other people or resources that helped you build this application. -->
 Lab 6 - Yasir Mohamud;
